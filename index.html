@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>【沖愛ビルド】50年生涯コスト比較＆将来設計シミュレーター 極</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Noto Sans JP -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <!-- FontAwesome for Premium Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brandYellow: '#f6ab00',
+            brandCyan: '#21bdc4',
+            brandDarkCyan: '#108e94',
+            lightBg: '#f8fafc',
+            darkSlate: '#0f172a',
+            accentGreen: '#10b981',
+            accentRed: '#f43f5e',
+          },
+          fontFamily: {
+            sans: ['Noto Sans JP', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* カスタムスライダーのスタイリング */
+    input[type="range"]::-webkit-slider-thumb {
+      background: #21bdc4;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(33, 189, 196, 0.4);
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      -webkit-appearance: none;
+      margin-top: -7px;
+      border-radius: 50%;
+      transition: transform 0.1s ease;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      transform: scale(1.15);
+    }
+    input[type="range"]::-moz-range-thumb {
+      background: #21bdc4;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 10px rgba(33, 189, 196, 0.4);
+      width: 22px;
+      height: 22px;
+      cursor: pointer;
+      border-radius: 50%;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      background: #e2e8f0;
+      height: 8px;
+      border-radius: 9999px;
+    }
+    .tab-transition {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  </style>
+</head>
+<body class="font-sans bg-slate-50 p-3 sm:p-5 md:p-8 text-slate-800 antialiased selection:bg-brandCyan/20">
+
+  <div class="max-w-7xl mx-auto bg-white rounded-[2.5rem] border border-slate-200/60 shadow-2xl shadow-slate-200/50 overflow-hidden">
+    
+    <!-- Premium Header Area -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 p-6 md:p-8 text-white flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 relative">
+      <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-brandCyan/10 via-transparent to-transparent pointer-events-none"></div>
+      <div class="space-y-2 relative z-10">
+        <div class="flex flex-wrap items-center gap-2.5">
+          <span class="bg-brandYellow text-slate-950 font-black text-[10px] tracking-widest px-3 py-1 rounded-full uppercase">イシンホーム FC加盟店</span>
+          <span class="text-slate-300 font-bold text-xs flex items-center gap-1">
+            <i class="fa-solid fa-location-dot text-brandCyan"></i> 沖縄ローカル仕様 | 沖愛ビルド
+          </span>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-black tracking-tight flex items-center gap-3 text-white">
+          <i class="fa-solid fa-chart-line text-brandCyan animate-pulse"></i>
+          <span>50年シミュレーション＆生涯おトク度設計パートナー</span>
+        </h1>
+        <p class="text-slate-300 text-xs md:text-sm max-w-4xl leading-relaxed">
+          沖縄の「強い紫外線」「台風」「塩害」による将来の修繕費や、上昇し続ける「沖縄電力の電気代」まで徹底予測。初期費用だけでなく、50年間にかかる全てのリアルなライフサイクルコスト（LCC）を比較・デザインします。
+        </p>
+      </div>
+      
+      <!-- Action Tools (Reset Only) -->
+      <div class="flex flex-wrap items-center gap-3.5 w-full lg:w-auto justify-end relative z-10">
+        <button onclick="resetInputs()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-3 px-5 rounded-2xl border border-slate-700 transition-all flex items-center gap-2">
+          <i class="fa-solid fa-rotate-left"></i>
+          <span>初期設計に戻す</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
+      
+      <!-- ==================== LEFT: Input & Strategy Panel ==================== -->
+      <div class="lg:col-span-6 p-5 md:p-8 space-y-6 bg-white overflow-y-auto max-h-[85vh]">
+        
+        <!-- Tab Navigation -->
+        <div class="border-b border-slate-200">
+          <nav class="flex flex-wrap gap-1" aria-label="Tabs">
+            <button onclick="switchTab('tab-loan')" id="btn-tab-loan" class="border-b-2 border-brandCyan text-brandCyan px-4 py-3 font-black text-xs sm:text-sm tab-transition flex items-center gap-2">
+              <i class="fa-solid fa-house-chimney"></i> 1. 資金・ローン
+            </button>
+            <button onclick="switchTab('tab-eco')" id="btn-tab-eco" class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 px-4 py-3 font-bold text-xs sm:text-sm tab-transition flex items-center gap-2">
+              <i class="fa-solid fa-solar-panel"></i> 2. ZEROセッチ＆蓄電
+            </button>
+            <button onclick="switchTab('tab-maintenance')" id="btn-tab-maintenance" class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 px-4 py-3 font-bold text-xs sm:text-sm tab-transition flex items-center gap-2">
+              <i class="fa-solid fa-screwdriver-wrench"></i> 3. 沖縄メンテナンス
+            </button>
+            <button onclick="switchTab('tab-tax')" id="btn-tab-tax" class="border-b-2 border-transparent text-slate-500 hover:text-slate-800 px-4 py-3 font-bold text-xs sm:text-sm tab-transition flex items-center gap-2">
+              <i class="fa-solid fa-percent"></i> 4. 税制＆火災保険
+            </button>
+          </nav>
+        </div>
+
+        <!-- ==================== TAB 1: Loan & Initial Budget ==================== -->
+        <div id="section-tab-loan" class="space-y-6">
+          <div class="bg-slate-50 p-4 rounded-3xl border border-slate-200/60 shadow-inner">
+            <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-circle-info text-slate-400"></i>比較対象（他社住宅）の基本設定
+            </h3>
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <label class="block text-sm font-bold text-slate-700">検討中の他社 住宅想定価格(税別)</label>
+              <div class="relative rounded-xl shadow-sm w-full sm:w-44">
+                <input type="number" id="compare-house-price" value="2600" oninput="syncDirectInput('compare-house-price', this.value)" class="w-full pl-4 pr-12 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-brandCyan focus:border-transparent">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none">
+                  <span class="text-xs text-slate-500 font-bold">万円</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Building Plan Quick Selector -->
+          <div>
+            <label class="block text-xs font-black text-slate-500 mb-2 flex items-center gap-1">
+              <i class="fa-solid fa-hand-pointer text-slate-400"></i>イシン建物プランをワンクリック選択：
+            </label>
+            <div class="grid grid-cols-3 gap-2.5">
+              <button onclick="setBuildingPrice(26500000, 28)" class="sim-quick-btn py-3 px-1.5 text-xs font-black rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-700 shadow-sm">
+                28坪（2,650万）
+              </button>
+              <button onclick="setBuildingPrice(29200000, 32)" class="sim-quick-btn py-3 px-1.5 text-xs font-black rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-700 shadow-sm">
+                32坪（2,920万）
+              </button>
+              <button onclick="setBuildingPrice(33700000, 40)" class="sim-quick-btn py-3 px-1.5 text-xs font-black rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-700 shadow-sm">
+                40坪（3,370万）
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. 建物本体価格 (税別) -->
+          <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-brandCyan inline-block shadow-sm"></span>
+                建物本体価格 (税別)
+              </span>
+              <div class="flex items-center gap-2">
+                <input type="number" id="input-building-num" value="2920" oninput="syncDirectInput('input-building', this.value)" class="w-24 text-right px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-black text-slate-800">
+                <span class="text-xs text-slate-500 font-bold">万円</span>
+              </div>
+            </div>
+            <input type="range" id="input-building" min="1500" max="5000" step="50" value="2920" oninput="syncRangeInput('input-building', this.value)" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+            <div class="text-right">
+              <span class="text-xs text-slate-400 font-bold" id="val-building-taxin-text">（税込 3,212万円）</span>
+            </div>
+          </div>
+
+          <!-- 2. 土地費用 -->
+          <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-amber-400 inline-block shadow-sm"></span>
+                土地費用
+              </span>
+              <div class="flex items-center gap-2">
+                <input type="number" id="input-land-num" value="0" oninput="syncDirectInput('input-land', this.value)" class="w-24 text-right px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-black text-slate-800">
+                <span class="text-xs text-slate-500 font-bold">万円</span>
+              </div>
+            </div>
+            <input type="range" id="input-land" min="0" max="5000" step="50" value="0" oninput="syncRangeInput('input-land', this.value)" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+          </div>
+
+          <!-- 3. 外構費用 -->
+          <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
+                外構費用（お庭・フェンス等）
+              </span>
+              <div class="flex items-center gap-2">
+                <input type="number" id="input-exterior-num" value="250" oninput="syncDirectInput('input-exterior', this.value)" class="w-24 text-right px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-black text-slate-800">
+                <span class="text-xs text-slate-500 font-bold">万円</span>
+              </div>
+            </div>
+            <input type="range" id="input-exterior" min="50" max="1000" step="10" value="250" oninput="syncRangeInput('input-exterior', this.value)" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+          </div>
+
+          <!-- 4. 諸費用 -->
+          <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                <span class="w-3 h-3 rounded-full bg-slate-400 inline-block shadow-sm"></span>
+                諸費用（地盤改良・諸手数料）
+              </span>
+              <div class="flex items-center gap-2">
+                <input type="number" id="input-fees-num" value="300" oninput="syncDirectInput('input-fees', this.value)" class="w-24 text-right px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-black text-slate-800">
+                <span class="text-xs text-slate-500 font-bold">万円</span>
+              </div>
+            </div>
+            <input type="range" id="input-fees" min="50" max="800" step="10" value="300" oninput="syncRangeInput('input-fees', this.value)" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+          </div>
+
+          <!-- 5. 自己資金 -->
+          <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+            <div class="flex justify-between items-center">
+              <span class="text-sm font-bold text-slate-700">自己資金（頭金）</span>
+              <div class="flex items-center gap-2">
+                <input type="number" id="input-down-num" value="0" oninput="syncDirectInput('input-down', this.value)" class="w-24 text-right px-2.5 py-1 border border-slate-200 rounded-lg text-sm font-black text-slate-800">
+                <span class="text-xs text-slate-500 font-bold">万円</span>
+              </div>
+            </div>
+            <input type="range" id="input-down" min="0" max="1500" step="50" value="0" oninput="syncRangeInput('input-down', this.value)" class="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+          </div>
+
+          <!-- 6. 返済期間 & 金利 -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-bold text-slate-700">返済期間</span>
+                <span class="text-sm font-black text-brandCyan" id="val-years-text">35 年</span>
+              </div>
+              <input type="range" id="input-years" min="15" max="50" step="1" value="35" oninput="calculate()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+            </div>
+            <div class="space-y-2 bg-slate-50/50 p-4 rounded-3xl border border-slate-100">
+              <div class="flex justify-between items-center">
+                <span class="text-sm font-bold text-slate-700">想定金利 (年利)</span>
+                <span class="text-sm font-bold text-slate-800" id="val-rate-text">1.2 %</span>
+              </div>
+              <input type="range" id="input-rate" min="0.1" max="4.0" step="0.1" value="1.2" oninput="calculate()" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brandCyan">
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 2: ZERO-SETCHI & Energy ==================== -->
+        <div id="section-tab-eco" class="hidden space-y-6">
+          <!-- Solar Panel Panel -->
+          <div class="bg-cyan-50/40 p-5 rounded-[2rem] border border-brandCyan/20 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="space-y-0.5">
+                <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                  <i class="fa-solid fa-solar-panel text-brandCyan text-base"></i>
+                  <span>大容量太陽光発電：8.6kW搭載</span>
+                </h3>
+                <span class="block text-[10px] text-brandCyan font-black">【超長期保証】機器25年＆出力35年保証、塩害対策強化仕様</span>
+              </div>
+              <!-- Solar Toggle -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="chk-solar" checked onchange="toggleSolarSystem()" class="sr-only peer">
+                <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brandCyan"></div>
+                <span class="ml-2.5 text-xs font-black text-slate-800" id="solar-status-badge">あり</span>
+              </label>
+            </div>
+            
+            <div id="solar-options-container" class="space-y-4 pt-3 border-t border-slate-200/50">
+              <div class="grid grid-cols-2 gap-3 text-center text-xs">
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                  <span class="block text-[10px] text-slate-400 font-bold mb-0.5">沖愛推奨＆高品質</span>
+                  <span class="text-xs font-black text-slate-800">次世代N型高性能パネル</span>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                  <span class="block text-[10px] text-slate-400 font-bold mb-0.5">設置特別総額(目安)</span>
+                  <span class="text-xs font-black text-slate-800">240 万円</span>
+                </div>
+              </div>
+
+              <p class="text-[11px] text-slate-600 leading-relaxed bg-white/80 p-3 rounded-2xl border border-cyan-100/60">
+                <i class="fa-solid fa-circle-check text-brandCyan mr-1"></i>イシン独自のN型セルは、塩害にも強く、経年劣化が極めて少ない次世代仕様。沖縄の強い日差しを強力にメリットへと変換します。
+              </p>
+
+              <div>
+                <label class="block text-xs font-black text-slate-600 mb-1.5">太陽光プラン選択：</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="btn-solar-lease" onclick="setSolarPlan('lease')" class="py-3 px-3 text-xs font-black rounded-xl border border-brandCyan bg-cyan-50 text-brandCyan shadow-sm transition-all">
+                    ZEROセッチ（10年リース：月2.0万）
+                  </button>
+                  <button id="btn-solar-buy" onclick="setSolarPlan('buy')" class="py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+                    一括ローン購入
+                  </button>
+                </div>
+                <p class="text-[9px] text-slate-400 mt-2 leading-relaxed">
+                  ※10年間のリース満了後は、太陽光発電システム一式が<strong>無償でお客様に譲渡</strong>されます（11年目以降はリース料0円）。
+                </p>
+              </div>
+
+              <!-- Solar Income Breakdown -->
+              <div class="bg-white p-3.5 rounded-2xl border border-cyan-100/60 text-xs text-slate-600 space-y-1.5 shadow-sm">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span>● 1〜10年目 (FIT売電収入):</span>
+                  <span class="text-emerald-600">平均 8,000 円 / 月</span>
+                </div>
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span>● 11年目以降 (卒FIT売電収入):</span>
+                  <span class="text-emerald-600">平均 3,000 円 / 月</span>
+                </div>
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span>● 日中自己消費による削減効果:</span>
+                  <span class="text-brandCyan">月平均約 6,600円分 節約</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Battery Storage Panel -->
+          <div id="battery-box" class="bg-emerald-50/30 p-5 rounded-[2rem] border border-emerald-500/20 space-y-4 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="space-y-0.5">
+                <h3 class="text-sm font-black text-slate-800 flex items-center gap-2">
+                  <i class="fa-solid fa-battery-three-quarters text-emerald-500 text-base"></i>
+                  <span>大容量蓄電池システム（テスラ・Powerwall等）</span>
+                </h3>
+                <span class="block text-[10px] text-emerald-600 font-bold">台風・停電時にも安心。非常時でも家全体の電力を自給可能</span>
+              </div>
+              <!-- Battery Toggle -->
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="chk-battery" onchange="toggleBatterySystem()" class="sr-only peer">
+                <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                <span class="ml-2.5 text-xs font-black text-slate-800" id="battery-status-badge">なし</span>
+              </label>
+            </div>
+            
+            <div id="battery-options-container" class="space-y-3 pt-3 border-t border-slate-200/50 hidden">
+              <div class="grid grid-cols-2 gap-3 text-center text-xs">
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                  <span class="block text-[10px] text-slate-400 font-bold mb-0.5">蓄電池本体+工事（目安）</span>
+                  <span class="text-xs font-black text-slate-800">216 万円</span>
+                </div>
+                <div class="bg-white p-3 rounded-2xl border border-slate-100 shadow-sm">
+                  <span class="block text-[10px] text-emerald-600 font-bold mb-0.5">買電カット効果</span>
+                  <span class="text-xs font-black text-emerald-600">毎月の電気代をほぼゼロ化</span>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-black text-slate-600 mb-1.5">蓄電池プラン選択：</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button id="btn-battery-lease" onclick="setBatteryPlan('lease')" class="py-3 px-3 text-xs font-black rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all">
+                    ZEROセッチ（10年リース：月1.8万）
+                  </button>
+                  <button id="btn-battery-buy" onclick="setBatteryPlan('buy')" class="py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all">
+                    一括ローン購入
+                  </button>
+                </div>
+                <p class="text-[9px] text-slate-400 mt-2">
+                  ※太陽光で創った電気を100%自宅で活用し、沖縄特有の夜間の冷房にかかる電気代もカット。こちらも10年満了で無償譲渡されます。
+                </p>
+              </div>
+
+              <div class="bg-white p-3.5 rounded-2xl border border-emerald-100/60 text-xs text-emerald-800 font-bold leading-relaxed shadow-sm">
+                <i class="fa-solid fa-cloud-bolt text-emerald-500 mr-1 animate-bounce"></i> 沖縄停電対策モデル：台風での突発的な長期停電時にも自動復旧し、冷蔵庫やエアコンをそのまま稼働し続けられます。
+              </div>
+            </div>
+            
+            <div id="battery-disabled-note" class="text-xs text-slate-400 italic">
+              ※太陽光システムを「あり」に設定すると、蓄電池オプションが選択可能になります。
+            </div>
+          </div>
+
+          <!-- Base Utility Bill Slider -->
+          <div class="space-y-3 bg-slate-50 p-4 rounded-[2rem] border border-slate-200/60">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-slate-700">現在の住まい（または他社）の平均光熱費：</span>
+              <span class="text-sm font-black text-slate-900" id="val-old-utility-text">22,000 円</span>
+            </div>
+            <input type="range" id="input-old-utility" min="10000" max="40000" step="1000" value="22000" oninput="calculate()" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-slate-500">
+            <p class="text-[10px] text-slate-400 leading-relaxed">
+              ※沖縄電力エリアの電気料金上昇、燃料費調整額を想定し、経年での上昇幅（年1.5%）をシミュレートしています。
+            </p>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 3: Okinawa Maintenance ==================== -->
+        <div id="section-tab-maintenance" class="hidden space-y-6">
+          <div class="bg-slate-50/50 p-5 rounded-[2rem] border border-slate-200 space-y-4">
+            <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-shield-virus text-indigo-500 text-base"></i>
+              <span>沖縄における50年メンテナンスの重要性と真実</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              沖縄のマイホーム維持は**「塩害」「台風」「年間を通じた強い紫外線」**との闘いです。
+              一般的な住宅（サイディング・安価なコーキング）は10〜12年周期で外壁塗装を繰り返す必要があり、
+              生涯コストを大きく跳ね上げる最大の要因になります。
+            </p>
+
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 space-y-4 text-xs">
+              <div class="border-b border-slate-100 pb-3">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-border-all text-indigo-500"></i> ① 外壁塗装（50年間）</span>
+                  <span class="text-accentRed">一般他社: 約 450万円</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">一般住宅は12〜15年ごと（合計3回）に全面塗装が必要です。イシンは超高耐候性40年耐久外壁のため、50年でわずか1回（150万）で済みます。</p>
+              </div>
+
+              <div class="border-b border-slate-100 pb-3">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-water text-indigo-500"></i> ② 目地シーリング補修（台風浸入対策）</span>
+                  <span class="text-accentRed">一般他社: 約 90万円</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">目地の割れは沖縄の台風時に雨水をダイレクトに通してしまいます。イシンは30年高耐久のため50年で1回（30万）に回数を減らせます。</p>
+              </div>
+
+              <div class="border-b border-slate-100 pb-3">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-house-crack text-indigo-500"></i> ③ 屋根補修点検（塩害・紫外線劣化）</span>
+                  <span class="text-accentRed">一般他社: 約 100万円</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">一般のコロニアル等は20年ごとの塗装補修。イシンで太陽光設置の場合、<strong>太陽光パネルが日傘のように屋根材の劣化を保護</strong>するため、屋根塗装がほぼ不要になります。</p>
+              </div>
+
+              <div class="border-b border-slate-100 pb-3">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span>④ 水回り設備交換（25年目目安）</span>
+                  <span class="text-slate-500">共通: 150万円</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">キッチン、システムバス、洗面台、トイレ等の大規模一括交換費として、どちらの会社でも一律発生します。</p>
+              </div>
+
+              <div class="border-b border-slate-100 pb-3">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span>⑤ エコキュート給湯器交換（15年ごと・計3回）</span>
+                  <span class="text-slate-500">共通: 180万円</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">1回あたりの交換費用を約60万円とし、50年間の耐久サイクル（計3回）に基づいてリアルに試算加算しています。</p>
+              </div>
+
+              <div class="pb-1">
+                <div class="flex justify-between font-bold text-slate-800">
+                  <span class="flex items-center gap-1"><i class="fa-solid fa-gear text-brandCyan"></i> ⑥ 太陽光・蓄電池（機器交換・パワコン交換等）</span>
+                  <span class="text-brandCyan" id="res-maint-equip-name">イシン: パワコン交換2回（50万）</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-1">寿命に伴って定期的に発生するパワーコンディショナ（20年/40年）、または蓄電池ユニットの交換費用を正確に反映しています。</p>
+              </div>
+            </div>
+
+            <!-- Summary of Maintenance -->
+            <div class="grid grid-cols-2 gap-4 text-center">
+              <div class="bg-white p-3 rounded-2xl border border-slate-200">
+                <p class="text-[10px] text-slate-400 font-bold mb-0.5">他社（50年維持費総額）</p>
+                <p class="text-sm font-black text-accentRed">約 970 万円</p>
+              </div>
+              <div class="bg-indigo-50 p-3 rounded-2xl border border-indigo-200">
+                <p class="text-[10px] text-indigo-600 font-bold mb-0.5">イシンホーム（50年維持費総額）</p>
+                <p class="text-sm font-black text-emerald-600" id="res-maint-total-50">約 530 万円</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== TAB 4: Tax & Insurance Advantages ==================== -->
+        <div id="section-tab-tax" class="hidden space-y-6">
+          <div class="bg-amber-50/40 p-5 rounded-[2rem] border border-amber-200 space-y-4">
+            <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-scale-balanced text-amber-600"></i>
+              <span>固定資産税の評価額・新築軽減メリット比較</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              固定資産税は、スライダーで入力された価格と完全連動して動的に算出しています。
+              <strong>【建物評価額：建物税込価格の65%】【土地評価額：土地価格 of 70%】</strong>を基準値として、標準税率1.4%および経年減価を適用して生涯算出しています。
+            </p>
+            
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 space-y-3.5 text-xs leading-relaxed">
+              <div>
+                <span class="block font-bold text-slate-800">🏦 固定資産税（50年累積予想・新築軽減補正含む）</span>
+                <div class="grid grid-cols-2 gap-3 mt-2 text-center">
+                  <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <span class="block text-[9px] text-slate-400">他社（一般3年軽減）</span>
+                    <span class="font-black text-slate-800 text-xs" id="tax-compare-old">0 万円</span>
+                  </div>
+                  <div class="bg-emerald-50/50 p-2.5 rounded-xl border border-emerald-100">
+                    <span class="block text-[9px] text-emerald-600">弊社（長期優良5年軽減）</span>
+                    <span class="font-black text-emerald-600 text-xs" id="tax-compare-new">0 万円</span>
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2.5">
+                  ※イシンホームは高水準の「長期優良住宅」が標準対応となるため、新築時の建物部分の1/2軽減措置が他社より2年間長く（計5年間）受けられます。
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Fire Insurance Advantage -->
+          <div class="bg-emerald-50/40 p-5 rounded-[2rem] border border-emerald-200 space-y-4">
+            <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-house-fire text-emerald-600"></i>
+              <span>省令準耐火構造による火災保険「半額」特権</span>
+            </h3>
+            <p class="text-xs text-slate-600 leading-relaxed">
+              イシンホームの建物は万一の火災に強い**「省令準耐火構造」**に標準で適合。台風が多い沖縄では火災・風災・地震保険の備えが必須ですが、イシンなら一般木造住宅と比較して保険料が50％軽減（約半額）されます。
+            </p>
+            
+            <div class="grid grid-cols-2 gap-4 text-center text-xs">
+              <div class="bg-white p-3.5 rounded-2xl border border-slate-200">
+                <p class="text-[10px] text-slate-400 font-bold mb-0.5">他社標準仕様木造（50年総額）</p>
+                <p class="text-sm font-black text-accentRed">400 万円</p>
+              </div>
+              <div class="bg-emerald-50 p-3.5 rounded-2xl border border-emerald-200">
+                <p class="text-[10px] text-emerald-600 font-bold mb-0.5">イシンホーム省令準耐火（50年総額）</p>
+                <p class="text-sm font-black text-emerald-600">200 万円</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== RIGHT: Real-time Analytics Dashboard ==================== -->
+      <div class="lg:col-span-6 p-5 md:p-8 bg-slate-50 flex flex-col justify-between overflow-y-auto max-h-[85vh]">
+        
+        <div class="space-y-6">
+          
+          <!-- Outstanding Profit Card -->
+          <div class="bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-950 p-6 rounded-[2rem] shadow-xl text-center relative overflow-hidden text-white border border-slate-800">
+            <div class="absolute -right-8 -bottom-8 opacity-10 text-9xl text-brandCyan">
+              <i class="fa-solid fa-piggy-bank"></i>
+            </div>
+            
+            <p class="text-brandCyan text-[11px] font-black tracking-widest uppercase mb-1.5 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-sparkles text-brandYellow"></i>
+              <span>イシンホーム（沖愛ビルド）の50年総おトク額</span>
+            </p>
+            
+            <div class="my-3">
+              <span class="text-xs font-medium text-slate-300 block mb-1">他社標準仕様住宅と比べて、生涯お支払総額が</span>
+              <span class="text-4xl md:text-5xl font-black text-brandYellow tracking-tight" id="res-total-profit">0</span>
+              <span class="text-xl font-black text-brandYellow"> 万円安くなる！</span>
+            </div>
+            
+            <div class="text-[10px] text-slate-400 max-w-md mx-auto leading-relaxed flex flex-wrap justify-center gap-x-3.5 gap-y-1 bg-white/5 py-2 px-4 rounded-xl border border-white/5">
+              <span>● 太陽光：<span id="selected-solar-status-text">あり</span></span>
+              <span>● 蓄電池：<span id="selected-battery-status-text">なし</span></span>
+            </div>
+          </div>
+
+          <!-- 50 Year Life Cycle Cost Chart (Line) -->
+          <div class="bg-white p-5 rounded-3xl border border-slate-200/60 shadow-sm space-y-4">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-chart-line text-brandCyan"></i>
+                <span>50年間の生涯累積コスト推移（万円）</span>
+              </h4>
+              <span class="text-[10px] font-bold bg-slate-100 px-2.5 py-1 rounded-full text-slate-500">2年ごと試算</span>
+            </div>
+            
+            <!-- Chart Container -->
+            <div class="relative w-full h-[250px] md:h-[320px]">
+              <canvas id="lccChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Monthly Cashflow Outlines -->
+          <div class="bg-white p-5 rounded-3xl border border-slate-200/60 shadow-sm space-y-5">
+            <div class="space-y-4">
+              <h4 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                <i class="fa-solid fa-money-check-dollar text-brandCyan"></i>
+                <span>月々の「住宅ローン」お支払い内訳</span>
+              </h4>
+              
+              <!-- Simple Loan Payment Comparison -->
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                <div class="bg-slate-100 p-3.5 rounded-2xl border border-slate-200 text-center">
+                  <span class="block text-[9px] font-black text-slate-400" id="res-monthly-other-title">他社住宅 (設定年数)</span>
+                  <span class="text-lg font-black text-slate-700" id="res-monthly-other">0</span> <span class="text-[10px] font-bold text-slate-500">円/月</span>
+                </div>
+                <div class="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 text-center">
+                  <span class="block text-[9px] font-black text-slate-400">弊社 当初10年間</span>
+                  <span class="text-lg font-black text-slate-900" id="res-monthly-10">0</span> <span class="text-[10px] font-bold text-slate-500">円/月</span>
+                  <span class="block text-[8px] text-slate-400 mt-1" id="res-monthly-10-desc">ローン ＋ リース料</span>
+                </div>
+                <div class="bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100 text-center">
+                  <span class="block text-[9px] font-black text-emerald-800">弊社 11年目以降</span>
+                  <span class="text-lg font-black text-emerald-600" id="res-monthly-post">0</span> <span class="text-[10px] font-bold text-emerald-600">円/月</span>
+                  <span class="block text-[8px] text-emerald-500 mt-1">ローンのみ（リース終了）</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Essential Total Monthly Costs Section -->
+            <div class="space-y-4 pt-3 border-t border-slate-100">
+              <h4 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-wallet text-brandYellow"></i>
+                <span>【真の実効比較】月々の「実質住居コスト」比較</span>
+              </h4>
+              <p class="text-[10px] text-slate-500 leading-relaxed">
+                ローン返済に、毎月の光熱費と、将来の修繕費や保険等に備えるために「本来積み立てておくべき月々換算費（50年総額÷600ヶ月）」をすべて足した、<strong>真の月々の住居生活費</strong>の比較です。
+              </p>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Competitor Essential Cost -->
+                <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100 space-y-2.5">
+                  <div class="flex justify-between items-center border-b border-rose-100/50 pb-1.5">
+                    <span class="text-[10px] font-black text-rose-800 uppercase flex items-center gap-1">
+                      <span class="w-2 h-2 rounded-full bg-rose-500 inline-block"></span>他社一般住宅（平均）
+                    </span>
+                    <span class="text-xs font-black text-rose-600" id="total-monthly-cost-other">0 円/月</span>
+                  </div>
+                  <div class="space-y-1 text-[9px] text-rose-700 font-bold">
+                    <div class="flex justify-between">
+                      <span>● 住宅ローン:</span>
+                      <span id="sub-monthly-loan-other">0 円</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>● 50年平均光熱費:</span>
+                      <span id="sub-monthly-util-other">0 円</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>● 修繕・税・保険積立:</span>
+                      <span id="sub-monthly-maint-other">0 円</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Ishin Essential Cost -->
+                <div class="bg-cyan-50/30 p-4 rounded-2xl border border-cyan-100 space-y-2.5">
+                  <div class="flex justify-between items-center border-b border-cyan-100/50 pb-1.5">
+                    <span class="text-[10px] font-black text-cyan-800 uppercase flex items-center gap-1">
+                      <span class="w-2 h-2 rounded-full bg-cyan-400 inline-block"></span>イシンホーム（平均）
+                    </span>
+                    <span class="text-xs font-black text-cyan-600" id="total-monthly-cost-our">0 円/月</span>
+                  </div>
+                  <div class="space-y-1 text-[9px] text-cyan-700 font-bold">
+                    <div class="flex justify-between">
+                      <span>● 住宅ローン＋リース（平均）:</span>
+                      <span id="sub-monthly-loan-our">0 円</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>● 50年平均光熱費:</span>
+                      <span id="sub-monthly-util-our">0 円</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span>● 修繕・税・保険積立（売電差引）:</span>
+                      <span id="sub-monthly-maint-our">0 円</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed LCC Table -->
+          <div class="bg-white p-5 rounded-3xl border border-slate-200/60 shadow-sm overflow-x-auto">
+            <table class="w-full text-left text-xs font-bold text-slate-700">
+              <thead>
+                <tr class="border-b border-slate-200 text-slate-400">
+                  <th class="pb-2 text-[10px] font-black uppercase">項目 (50年累積)</th>
+                  <th class="pb-2 text-[10px] font-black uppercase">他社一般仕様</th>
+                  <th class="pb-2 text-[10px] font-black uppercase text-brandCyan">イシンホーム(選択中)</th>
+                  <th class="pb-2 text-[10px] font-black uppercase text-right">差額メリット</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr>
+                  <td class="py-3">
+                    <span>ローン返済額 ＋ ZEROセッチ</span>
+                    <span class="block text-[9px] text-slate-400 font-normal">借入元金＋利息＋10年分リース料</span>
+                  </td>
+                  <td class="py-3" id="tbl-old-loan">0 万円</td>
+                  <td class="py-3 text-brandCyan" id="tbl-new-loan">0 万円</td>
+                  <td class="py-3 text-right text-emerald-600" id="tbl-diff-loan">0 万円</td>
+                </tr>
+                <tr>
+                  <td class="py-3">
+                    <span>光熱費総額</span>
+                    <span class="block text-[9px] text-slate-400 font-normal">年1.5%高騰リスク想定含む</span>
+                  </td>
+                  <td class="py-3" id="tbl-old-utility">0 万円</td>
+                  <td class="py-3 text-brandCyan" id="tbl-new-utility">0 万円</td>
+                  <td class="py-3 text-right text-emerald-600" id="tbl-diff-utility">0 万円</td>
+                </tr>
+                <tr>
+                  <td class="py-3">
+                    <span>沖縄耐久メンテナンス費</span>
+                    <span class="block text-[9px] text-slate-400 font-normal">外壁・シーリング・水回り・エコキュート等</span>
+                  </td>
+                  <td class="py-3" id="tbl-old-maintenance">0 万円</td>
+                  <td class="py-3 text-brandCyan" id="tbl-new-maintenance">0 万円</td>
+                  <td class="py-3 text-right text-emerald-600" id="tbl-diff-maintenance">0 万円</td>
+                </tr>
+                <tr>
+                  <td class="py-3">
+                    <span>諸税（固定資産税）・火災保険料</span>
+                    <span class="block text-[9px] text-slate-400 font-normal">評価額完全連動・省令準耐火半額</span>
+                  </td>
+                  <td class="py-3" id="tbl-old-tax">0 万円</td>
+                  <td class="py-3 text-brandCyan" id="tbl-new-tax">0 万円</td>
+                  <td class="py-3 text-right text-emerald-600" id="tbl-diff-tax">0 万円</td>
+                </tr>
+                <tr class="bg-yellow-50/50">
+                  <td class="py-3 text-amber-700">
+                    <span>売電収入（還元額）</span>
+                    <span class="block text-[9px] text-slate-400 font-normal">FIT10年+卒FIT40年のリアル収入期待値</span>
+                  </td>
+                  <td class="py-3 text-slate-400 font-normal">なし (0円)</td>
+                  <td class="py-3 text-brandCyan" id="tbl-new-solar">0 万円</td>
+                  <td class="py-3 text-right text-emerald-600" id="tbl-diff-solar">0 万円</td>
+                </tr>
+                <tr class="bg-slate-900 text-white text-xs font-black">
+                  <td class="py-3.5 rounded-l-xl pl-3">50年総合計コスト</td>
+                  <td class="py-3.5" id="tbl-old-grand">0 万円</td>
+                  <td class="py-3.5 text-brandYellow" id="tbl-new-grand">0 万円</td>
+                  <td class="py-3.5 text-right text-brandYellow pr-3 rounded-r-xl" id="tbl-diff-grand">0 万円</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // Global States
+    let activeTab = 'tab-loan';
+    let solarPlan = 'lease'; // 'lease' or 'buy'
+    let batteryPlan = 'lease'; // 'lease' or 'buy'
+    let myChart = null;
+
+    // Synchronize direct numerical inputs with range sliders
+    function syncRangeInput(id, val) {
+      document.getElementById(id + '-num').value = val;
+      calculate();
+    }
+    
+    function syncDirectInput(id, val) {
+      const parsed = parseFloat(val) || 0;
+      const slider = document.getElementById(id);
+      if (slider) {
+        if (parsed > parseFloat(slider.max)) slider.max = parsed; // スライダー上限の自動拡張
+        slider.value = parsed;
+      }
+      calculate();
+    }
+
+    // Tab switcher logic
+    function switchTab(tabId) {
+      activeTab = tabId;
+      document.getElementById('section-tab-loan').classList.add('hidden');
+      document.getElementById('section-tab-eco').classList.add('hidden');
+      document.getElementById('section-tab-maintenance').classList.add('hidden');
+      document.getElementById('section-tab-tax').classList.add('hidden');
+      
+      document.getElementById('section-' + tabId).classList.remove('hidden');
+
+      const buttons = ['btn-tab-loan', 'btn-tab-eco', 'btn-tab-maintenance', 'btn-tab-tax'];
+      buttons.forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btnId === 'btn-' + tabId) {
+          btn.classList.add('border-brandCyan', 'text-brandCyan');
+          btn.classList.remove('border-transparent', 'text-slate-500');
+        } else {
+          btn.classList.remove('border-brandCyan', 'text-brandCyan');
+          btn.classList.add('border-transparent', 'text-slate-500');
+        }
+      });
+    }
+
+    // Solar power system toggle logic
+    function toggleSolarSystem() {
+      const isSolarChecked = document.getElementById('chk-solar').checked;
+      const solarOptions = document.getElementById('solar-options-container');
+      const batteryBox = document.getElementById('battery-box');
+      const batteryChk = document.getElementById('chk-battery');
+      const batteryOptions = document.getElementById('battery-options-container');
+      const batteryDisabledNote = document.getElementById('battery-disabled-note');
+
+      if (isSolarChecked) {
+        document.getElementById('solar-status-badge').textContent = 'あり';
+        solarOptions.classList.remove('hidden');
+        batteryBox.classList.remove('opacity-50');
+        batteryDisabledNote.classList.add('hidden');
+        batteryBox.classList.remove('pointer-events-none');
+      } else {
+        document.getElementById('solar-status-badge').textContent = 'なし';
+        solarOptions.classList.add('hidden');
+        
+        batteryChk.checked = false;
+        document.getElementById('battery-status-badge').textContent = 'なし';
+        batteryOptions.classList.add('hidden');
+        batteryBox.classList.add('opacity-50');
+        batteryDisabledNote.classList.remove('hidden');
+        batteryBox.classList.add('pointer-events-none');
+      }
+      calculate();
+    }
+
+    // Battery system toggle logic
+    function toggleBatterySystem() {
+      const isBatteryChecked = document.getElementById('chk-battery').checked;
+      const batteryOptions = document.getElementById('battery-options-container');
+
+      if (isBatteryChecked) {
+        document.getElementById('battery-status-badge').textContent = 'あり';
+        batteryOptions.classList.remove('hidden');
+      } else {
+        document.getElementById('battery-status-badge').textContent = 'なし';
+        batteryOptions.classList.add('hidden');
+      }
+      calculate();
+    }
+
+    // Set solar acquisition scheme
+    function setSolarPlan(plan) {
+      solarPlan = plan;
+      const btnLease = document.getElementById('btn-solar-lease');
+      const btnBuy = document.getElementById('btn-solar-buy');
+
+      if (plan === 'lease') {
+        btnLease.className = 'py-3 px-3 text-xs font-black rounded-xl border border-brandCyan bg-cyan-50 text-brandCyan shadow-sm transition-all';
+        btnBuy.className = 'py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all';
+      } else {
+        btnBuy.className = 'py-3 px-3 text-xs font-black rounded-xl border border-brandCyan bg-cyan-50 text-brandCyan shadow-sm transition-all';
+        btnLease.className = 'py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all';
+      }
+      calculate();
+    }
+
+    // Set battery acquisition scheme
+    function setBatteryPlan(plan) {
+      batteryPlan = plan;
+      const btnLease = document.getElementById('btn-battery-lease');
+      const btnBuy = document.getElementById('btn-battery-buy');
+
+      if (plan === 'lease') {
+        btnLease.className = 'py-3 px-3 text-xs font-black rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all';
+        btnBuy.className = 'py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all';
+      } else {
+        btnBuy.className = 'py-3 px-3 text-xs font-black rounded-xl border border-emerald-500 bg-emerald-50 text-emerald-600 shadow-sm transition-all';
+        btnLease.className = 'py-3 px-3 text-xs font-bold rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm transition-all';
+      }
+      calculate();
+    }
+
+    // Quick set building price by坪
+    function setBuildingPrice(basePrice, totalTsubo) {
+      const valTenThousand = Math.round(basePrice / 10000);
+      document.getElementById('input-building').value = valTenThousand;
+      document.getElementById('input-building-num').value = valTenThousand;
+      
+      const quickBtns = document.querySelectorAll('.sim-quick-btn');
+      quickBtns.forEach(btn => {
+        btn.classList.remove('border-brandCyan', 'text-brandCyan', 'bg-cyan-50/40');
+        btn.classList.add('border-slate-200', 'text-slate-700', 'bg-white');
+      });
+
+      let targetIndex = 0;
+      if (totalTsubo === 32) targetIndex = 1;
+      if (totalTsubo === 40) targetIndex = 2;
+      
+      if (quickBtns[targetIndex]) {
+        quickBtns[targetIndex].classList.add('border-brandCyan', 'text-brandCyan', 'bg-cyan-50/40');
+        quickBtns[targetIndex].classList.remove('border-slate-200', 'text-slate-700', 'bg-white');
+      }
+
+      calculate();
+    }
+
+    // Main Calculator and Graph Updater
+    function calculate() {
+      // 1. Inputs Acquisition
+      const compareHouseBase = (parseFloat(document.getElementById('compare-house-price').value) || 0) * 10000;
+      const buildingBase = parseFloat(document.getElementById('input-building').value) * 10000; 
+      const land = parseFloat(document.getElementById('input-land').value) * 10000;
+      const exterior = parseFloat(document.getElementById('input-exterior').value) * 10000; 
+      const fees = parseFloat(document.getElementById('input-fees').value) * 10000; 
+      const downPayment = parseFloat(document.getElementById('input-down').value) * 10000;
+      const years = parseInt(document.getElementById('input-years').value);
+      const annualRate = parseFloat(document.getElementById('input-rate').value);
+
+      const hasSolar = document.getElementById('chk-solar').checked;
+      const hasBattery = hasSolar && document.getElementById('chk-battery').checked;
+      const oldUtilityMonth = parseFloat(document.getElementById('input-old-utility').value);
+
+      // System Unit costs (Estimates)
+      const solarCost = 2400000;
+      const batteryCost = 2160000;
+
+      // Sales Tax (10%)
+      const buildingTaxIn = buildingBase * 1.1;
+
+      // Status Labels Synchronizer
+      document.getElementById('selected-solar-status-text').textContent = hasSolar ? `あり (${solarPlan === 'lease' ? 'ZEROセッチ10年リース' : '一括ローン購入'})` : 'なし';
+      document.getElementById('selected-battery-status-text').textContent = hasBattery ? `あり (${batteryPlan === 'lease' ? 'ZEROセッチ10年リース' : '一括ローン購入'})` : 'なし';
+
+      // Updates Sliders and Numbers
+      document.getElementById('val-building-taxin-text').textContent = "（税込 " + (buildingTaxIn / 10000).toLocaleString('ja-JP') + "万円）";
+      document.getElementById('val-years-text').textContent = years + " 年";
+      document.getElementById('val-rate-text').textContent = annualRate.toFixed(1) + " %";
+      document.getElementById('val-old-utility-text').textContent = oldUtilityMonth.toLocaleString('ja-JP') + " 円";
+
+      // 2. Initial principal and mortgage computation
+      let ourPrincipal = buildingTaxIn + land + fees + exterior - downPayment;
+      let ourSolarLeaseMonthly = 0;
+      let ourBatteryLeaseMonthly = 0;
+
+      if (hasSolar) {
+        if (solarPlan === 'buy') {
+          ourPrincipal += solarCost;
+        } else {
+          ourSolarLeaseMonthly = 20000;
+        }
+      }
+      if (hasBattery) {
+        if (batteryPlan === 'buy') {
+          ourPrincipal += batteryCost;
+        } else {
+          ourBatteryLeaseMonthly = 18000;
+        }
+      }
+      if (ourPrincipal < 0) ourPrincipal = 0;
+
+      const ourMonthlyMortgage = calculateMonthlyPayment(ourPrincipal, years, annualRate);
+      
+      const totalLeaseMonthly = ourSolarLeaseMonthly + ourBatteryLeaseMonthly;
+      const ourMonthlyPayment10 = ourMonthlyMortgage + totalLeaseMonthly;
+      
+      document.getElementById('res-monthly-10').textContent = Math.round(ourMonthlyPayment10).toLocaleString('ja-JP');
+      document.getElementById('res-monthly-post').textContent = Math.round(ourMonthlyMortgage).toLocaleString('ja-JP');
+      
+      if (totalLeaseMonthly > 0) {
+        document.getElementById('res-monthly-10-desc').textContent = `住宅ローン ＋ ZEROセッチ (月${(totalLeaseMonthly/10000).toFixed(1)}万)`;
+      } else {
+        document.getElementById('res-monthly-10-desc').textContent = `住宅ローンのみ（ZEROセッチなし）`;
+      }
+
+      // 3. Maintenance Cost Calculation (Okinawa Dynamic Maintenance Model)
+      let newMaintTotal50 = 1500000 + 1800000 + 1500000 + 300000; 
+      if (hasSolar) {
+        newMaintTotal50 += 200000; // 屋根保護による点検補修抑制効果
+        newMaintTotal50 += 500000; // パワコン交換2回
+        document.getElementById('res-maint-equip-name').textContent = "イシン: パワコン交換2回 (50万)";
+      } else {
+        newMaintTotal50 += 1000000; // 屋根塗装（通常コロニアル仕様）
+        document.getElementById('res-maint-equip-name').textContent = "イシン: 給湯器・住設のみ";
+      }
+      if (hasBattery) {
+        newMaintTotal50 += 1800000; // 蓄電池本体交換2回
+        document.getElementById('res-maint-equip-name').textContent = "イシン: パワコン＆蓄電池交換 (計230万)";
+      }
+      document.getElementById('res-maint-total-50').textContent = "約 " + Math.round(newMaintTotal50 / 10000) + " 万円";
+
+      // 4. Lifespan Accumulated Cost Calculation
+      // --- A. Other houses without Solar ---
+      const otherPrincipal = (compareHouseBase * 1.1) + land + fees + exterior;
+      
+      // 他社のローン返済期間を35年固定から「設定スライダー(years)」へ同期
+      const otherMonthlyMortgage = calculateMonthlyPayment(otherPrincipal, years, annualRate);
+      document.getElementById('res-monthly-other').textContent = Math.round(otherMonthlyMortgage).toLocaleString('ja-JP');
+      document.getElementById('res-monthly-other-title').textContent = `他社住宅 (${years}年返済)`;
+      const otherTotalLoan50 = otherMonthlyMortgage * 12 * years;
+      
+      const otherUtility50 = calculateUtility50(oldUtilityMonth, 1.5);
+      const otherMaintenance50 = 9700000; 
+
+      // Property Tax Dynamic Model:
+      const bldgAssessOther = (compareHouseBase * 1.1) * 0.65;
+      const landAssess = land * 0.70;
+      
+      const bldgTaxInitOther = bldgAssessOther * 0.014;
+      const bldgTaxBase50Other = bldgTaxInitOther * 50 * 0.45;
+      const otherBldgTaxAccum = bldgTaxBase50Other - (bldgTaxInitOther * 0.5 * 3);
+      
+      const landTaxAnnual = (landAssess / 6) * 0.014;
+      const landTaxAccum = landTaxAnnual * 50;
+
+      const otherTax50 = otherBldgTaxAccum + landTaxAccum + 4000000;
+      const otherTotal50 = otherTotalLoan50 + otherUtility50 + otherMaintenance50 + otherTax50;
+
+      // --- B. Our Plan ---
+      const newTotalLoan50 = ourMonthlyMortgage * 12 * years + (totalLeaseMonthly * 12 * 10);
+      
+      let newUtilityBase = oldUtilityMonth;
+      let utilityInflation = 1.5;
+      if (hasSolar) {
+        newUtilityBase = oldUtilityMonth * 0.7; // 30% solar self-consumption savings
+        utilityInflation = 1.0;
+      }
+      if (hasBattery) {
+        newUtilityBase = 0; // Solar + Battery = Zero electricity bills
+        utilityInflation = 0;
+      }
+      const newUtility50 = calculateUtility50(newUtilityBase, utilityInflation);
+      
+      const bldgAssessOur = buildingTaxIn * 0.65;
+      const bldgTaxInitOur = bldgAssessOur * 0.014;
+      const bldgTaxBase50Our = bldgTaxInitOur * 50 * 0.45;
+      const ourBldgTaxAccum = bldgTaxBase50Our - (bldgTaxInitOur * 0.5 * 5);
+      
+      const newTax50 = ourBldgTaxAccum + landTaxAccum + 2000000;
+
+      let newSolarBenefit50 = 0;
+      if (hasSolar) {
+        newSolarBenefit50 = (8000 * 12 * 10) + (3000 * 12 * 40);
+      }
+      const newTotal50 = newTotalLoan50 + newUtility50 + newMaintTotal50 + newTax50 - newSolarBenefit50;
+
+      // Dynamic Property Tax UI Update
+      document.getElementById('tax-compare-old').textContent = Math.round((otherBldgTaxAccum + landTaxAccum) / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tax-compare-new').textContent = Math.round((ourBldgTaxAccum + landTaxAccum) / 10000).toLocaleString('ja-JP') + " 万円";
+
+      // Delta Benefit Show
+      const profit50 = otherTotal50 - newTotal50;
+      document.getElementById('res-total-profit').textContent = Math.round(profit50 / 10000).toLocaleString('ja-JP');
+
+      // Writing into table
+      document.getElementById('tbl-old-loan').textContent = Math.round(otherTotalLoan50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-new-loan').textContent = Math.round(newTotalLoan50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-diff-loan').textContent = Math.round((otherTotalLoan50 - newTotalLoan50) / 10000).toLocaleString('ja-JP') + " 万円";
+
+      document.getElementById('tbl-old-utility').textContent = Math.round(otherUtility50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-new-utility').textContent = Math.round(newUtility50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-diff-utility').textContent = Math.round((otherUtility50 - newUtility50) / 10000).toLocaleString('ja-JP') + " 万円";
+
+      document.getElementById('tbl-old-maintenance').textContent = Math.round(otherMaintenance50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-new-maintenance').textContent = Math.round(newMaintTotal50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-diff-maintenance').textContent = Math.round((otherMaintenance50 - newMaintTotal50) / 10000).toLocaleString('ja-JP') + " 万円";
+
+      document.getElementById('tbl-old-tax').textContent = Math.round(otherTax50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-new-tax').textContent = Math.round(newTax50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-diff-tax').textContent = Math.round((otherTax50 - newTax50) / 10000).toLocaleString('ja-JP') + " 万円";
+
+      document.getElementById('tbl-new-solar').textContent = hasSolar ? "+" + Math.round(newSolarBenefit50 / 10000) + " 万円" : "なし (0円)";
+      document.getElementById('tbl-diff-solar').textContent = hasSolar ? "+" + Math.round(newSolarBenefit50 / 10000) + " 万円" : "0 万円";
+
+      document.getElementById('tbl-old-grand').textContent = Math.round(otherTotal50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-new-grand').textContent = Math.round(newTotal50 / 10000).toLocaleString('ja-JP') + " 万円";
+      document.getElementById('tbl-diff-grand').textContent = "▲ " + Math.round(profit50 / 10000).toLocaleString('ja-JP') + " 万円";
+
+      // 4.5 monthly average real lifestyle costs (50 years average per month)
+      const monthlyLoanOtherAvg = otherTotalLoan50 / 600;
+      const monthlyUtilOtherAvg = otherUtility50 / 600;
+      const monthlyMaintOtherAvg = (otherMaintenance50 + otherTax50) / 600;
+      const totalMonthlyOtherAvg = monthlyLoanOtherAvg + monthlyUtilOtherAvg + monthlyMaintOtherAvg;
+
+      document.getElementById('total-monthly-cost-other').textContent = Math.round(totalMonthlyOtherAvg).toLocaleString('ja-JP') + " 円/月";
+      document.getElementById('sub-monthly-loan-other').textContent = Math.round(monthlyLoanOtherAvg).toLocaleString('ja-JP') + " 円";
+      document.getElementById('sub-monthly-util-other').textContent = Math.round(monthlyUtilOtherAvg).toLocaleString('ja-JP') + " 円";
+      document.getElementById('sub-monthly-maint-other').textContent = Math.round(monthlyMaintOtherAvg).toLocaleString('ja-JP') + " 円";
+
+      const monthlyLoanOurAvg = newTotalLoan50 / 600;
+      const monthlyUtilOurAvg = newUtility50 / 600;
+      const monthlyMaintOurAvg = (newMaintTotal50 + newTax50 - newSolarBenefit50) / 600;
+      const totalMonthlyOurAvg = monthlyLoanOurAvg + monthlyUtilOurAvg + monthlyMaintOurAvg;
+
+      document.getElementById('total-monthly-cost-our').textContent = Math.round(totalMonthlyOurAvg).toLocaleString('ja-JP') + " 円/月";
+      document.getElementById('sub-monthly-loan-our').textContent = Math.round(monthlyLoanOurAvg).toLocaleString('ja-JP') + " 円";
+      document.getElementById('sub-monthly-util-our').textContent = Math.round(monthlyUtilOurAvg).toLocaleString('ja-JP') + " 円";
+      document.getElementById('sub-monthly-maint-our').textContent = Math.round(monthlyMaintOurAvg).toLocaleString('ja-JP') + " 円";
+
+      // 5. Build 50-year Line Graph dataset (Every 2 Years)
+      const yearsArray = [];
+      const dataOtherNoSolar = [];
+      const dataMyNoSolar = [];
+      const dataMySolarOnlyLease = [];
+      const dataMySolarBatteryLease = [];
+
+      for (let y = 0; y <= 50; y += 2) {
+        yearsArray.push(y + "年");
+
+        // Event-driven Maintenance accumulation over years
+        let otherMaintY = 0;
+        if (y >= 15) otherMaintY += 150 + 30 + 60;
+        if (y >= 20) otherMaintY += 50;
+        if (y >= 25) otherMaintY += 150;
+        if (y >= 30) otherMaintY += 150 + 30 + 60;
+        if (y >= 40) otherMaintY += 50;
+        if (y >= 45) otherMaintY += 150 + 30 + 60;
+        const otherMaintYCost = otherMaintY * 10000;
+
+        let myNoSolarMaintY = 0;
+        if (y >= 15) myNoSolarMaintY += 60;
+        if (y >= 20) myNoSolarMaintY += 50;
+        if (y >= 25) myNoSolarMaintY += 150;
+        if (y >= 30) myNoSolarMaintY += 30 + 60;
+        if (y >= 40) myNoSolarMaintY += 150 + 50;
+        if (y >= 45) myNoSolarMaintY += 60;
+        if (y >= 50) myNoSolarMaintY += 130;
+        const myNoSolarMaintYCost = myNoSolarMaintY * 10000;
+
+        let mySolarOnlyMaintY = 0;
+        if (y >= 15) mySolarOnlyMaintY += 60;
+        if (y >= 20) mySolarOnlyMaintY += 20 + 25;
+        if (y >= 25) mySolarOnlyMaintY += 150;
+        if (y >= 30) mySolarOnlyMaintY += 30 + 60;
+        if (y >= 40) mySolarOnlyMaintY += 150 + 25;
+        if (y >= 45) mySolarOnlyMaintY += 60;
+        if (y >= 50) mySolarOnlyMaintY += 30;
+        const mySolarOnlyMaintYCost = mySolarOnlyMaintY * 10000;
+
+        let mySolarBatMaintY = 0;
+        if (y >= 15) mySolarBatMaintY += 60;
+        if (y >= 20) mySolarBatMaintY += 20 + 25 + 90;
+        if (y >= 25) mySolarBatMaintY += 150;
+        if (y >= 30) mySolarBatMaintY += 30 + 60;
+        if (y >= 40) mySolarBatMaintY += 150 + 25 + 90;
+        if (y >= 45) mySolarBatMaintY += 60;
+        if (y >= 50) mySolarBatMaintY += 30;
+        const mySolarBatMaintYCost = mySolarBatMaintY * 10000;
+
+        // Dataset 1: General competitor without Solar (完済年数yearsに同期)
+        const accOtherLoan = otherMonthlyMortgage * 12 * Math.min(y, years);
+        const accOtherUtility = calculateUtility50(oldUtilityMonth, 1.5, y);
+        const accOtherTax = (otherTax50 / 50) * y;
+        dataOtherNoSolar.push(Math.round((accOtherLoan + accOtherUtility + otherMaintYCost + accOtherTax) / 10000));
+
+        // Dataset 2: Ishin without Solar
+        const ourNoSolarPrincipal = buildingTaxIn + land + fees + exterior - downPayment;
+        const ourNoSolarMonthlyMortgage = calculateMonthlyPayment(ourNoSolarPrincipal, years, annualRate);
+        const accMyNoSolarLoan = ourNoSolarMonthlyMortgage * 12 * Math.min(y, years);
+        const accMyNoSolarUtility = calculateUtility50(oldUtilityMonth, 1.5, y);
+        const accMyNoSolarTax = (newTax50 / 50) * y;
+        dataMyNoSolar.push(Math.round((accMyNoSolarLoan + accMyNoSolarUtility + myNoSolarMaintYCost + accMyNoSolarTax) / 10000));
+
+        // Dataset 3: Ishin with Solar (ZERO-SETCHI Lease)
+        const accMySolarOnlyLoan = ourNoSolarMonthlyMortgage * 12 * Math.min(y, years);
+        const accMySolarOnlyLease = 20000 * 12 * Math.min(y, 10);
+        const accMySolarOnlyUtility = calculateUtility50(oldUtilityMonth * 0.7, 1.0, y);
+        const accMySolarOnlyBenefit = (y <= 10) ? (8000 * 12 * y) : ((8000 * 12 * 10) + (3000 * 12 * (y - 10)));
+        dataMySolarOnlyLease.push(Math.round((accMySolarOnlyLoan + accMySolarOnlyLease + accMySolarOnlyUtility + mySolarOnlyMaintYCost + accMyNoSolarTax - accMySolarOnlyBenefit) / 10000));
+
+        // Dataset 4: Ishin with Solar + Battery (Double ZERO-SETCHI)
+        const accMySolarBatLoan = ourNoSolarMonthlyMortgage * 12 * Math.min(y, years);
+        const accMySolarBatLease = 38000 * 12 * Math.min(y, 10);
+        const accMySolarBatUtility = 0;
+        const accMySolarBatBenefit = (y <= 10) ? (8000 * 12 * y) : ((8000 * 12 * 10) + (3000 * 12 * (y - 10)));
+        dataMySolarBatteryLease.push(Math.round((accMySolarBatLoan + accMySolarBatLease + accMySolarBatUtility + mySolarBatMaintYCost + accMyNoSolarTax - accMySolarBatBenefit) / 10000));
+      }
+
+      updateLccChart(yearsArray, dataOtherNoSolar, dataMyNoSolar, dataMySolarOnlyLease, dataMySolarBatteryLease);
+    }
+
+    // Amortization calculation
+    function calculateMonthlyPayment(principal, termYears, annualRate) {
+      if (principal <= 0) return 0;
+      const monthlyRate = (annualRate / 100) / 12;
+      const totalPayments = termYears * 12;
+
+      if (monthlyRate === 0) {
+        return principal / totalPayments;
+      }
+      return (principal * monthlyRate * Math.pow(1 + monthlyRate, totalPayments)) / (Math.pow(1 + monthlyRate, totalPayments) - 1);
+    }
+
+    // Compounded Utility inflation accumulator
+    function calculateUtility50(startMonthly, annualInflationPercent, targetYears = 50) {
+      let total = 0;
+      let currentYearly = startMonthly * 12;
+      for (let y = 1; y <= targetYears; y++) {
+        total += currentYearly;
+        currentYearly *= (1 + (annualInflationPercent / 100));
+      }
+      return total;
+    }
+
+    // ChartJS Handler
+    function updateLccChart(labels, dOther, dMyNoSol, dMySolOnly, dMySolBat) {
+      const ctx = document.getElementById('lccChart').getContext('2d');
+      
+      if (myChart) {
+        myChart.destroy();
+      }
+
+      myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '他社一般仕様 (太陽光なし)',
+              data: dOther,
+              borderColor: '#f43f5e',
+              backgroundColor: 'rgba(244, 63, 94, 0.05)',
+              borderWidth: 3.5,
+              pointRadius: 1,
+              pointHitRadius: 10,
+              tension: 0.15,
+              fill: false
+            },
+            {
+              label: 'イシンホーム (太陽光なし)',
+              data: dMyNoSol,
+              borderColor: '#64748b',
+              backgroundColor: 'rgba(100, 116, 139, 0.05)',
+              borderWidth: 2,
+              pointRadius: 0,
+              borderDash: [5, 5],
+              tension: 0.15,
+              fill: false
+            },
+            {
+              label: 'イシンホーム (太陽光あり)',
+              data: dMySolOnly,
+              borderColor: '#21bdc4',
+              backgroundColor: 'rgba(33, 189, 196, 0.05)',
+              borderWidth: 3.5,
+              pointRadius: 1,
+              tension: 0.15,
+              fill: false
+            },
+            {
+              label: 'イシンホーム (太陽光＋蓄電池)',
+              data: dMySolBat,
+              borderColor: '#f6ab00',
+              backgroundColor: 'rgba(246, 171, 0, 0.05)',
+              borderWidth: 4.5,
+              pointRadius: 2,
+              tension: 0.15,
+              fill: false
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+              labels: {
+                boxWidth: 10,
+                boxHeight: 10,
+                font: {
+                  size: 9,
+                  weight: 'bold',
+                  family: 'Noto Sans JP'
+                },
+                color: '#334155'
+              }
+            },
+            tooltip: {
+              titleFont: { family: 'Noto Sans JP', weight: 'bold' },
+              bodyFont: { family: 'Noto Sans JP' },
+              callbacks: {
+                label: function(context) {
+                  return context.dataset.label + ': ' + context.raw.toLocaleString() + ' 万円';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                font: { size: 9, weight: 'bold' },
+                color: '#64748b'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: '累積出費（万円）',
+                font: { size: 10, weight: 'bold' },
+                color: '#64748b'
+              },
+              ticks: {
+                font: { size: 9, weight: 'bold' },
+                color: '#64748b',
+                callback: function(value) {
+                  return value.toLocaleString() + '万';
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Reset All Inputs to Defaults
+    function resetInputs() {
+      document.getElementById('compare-house-price').value = 2600;
+      document.getElementById('input-building').value = 2920;
+      document.getElementById('input-building-num').value = 2920;
+      document.getElementById('input-land').value = 0;
+      document.getElementById('input-land-num').value = 0;
+      document.getElementById('input-exterior').value = 250;
+      document.getElementById('input-exterior-num').value = 250;
+      document.getElementById('input-fees').value = 300;
+      document.getElementById('input-fees-num').value = 300;
+      document.getElementById('input-down').value = 0;
+      document.getElementById('input-down-num').value = 0;
+      
+      document.getElementById('input-years').value = 35;
+      document.getElementById('input-rate').value = 1.2;
+      document.getElementById('chk-solar').checked = true;
+      document.getElementById('chk-battery').checked = false;
+      document.getElementById('input-old-utility').value = 22000;
+      
+      solarPlan = 'lease';
+      batteryPlan = 'lease';
+      
+      setSolarPlan('lease');
+      setBatteryPlan('lease');
+      setBuildingPrice(29200000, 32);
+      toggleSolarSystem();
+      switchTab('tab-loan');
+    }
+
+    // Initialize on window loaded
+    window.onload = function() {
+      setBuildingPrice(29200000, 32);
+      toggleSolarSystem();
+    };
+  </script>
+</body>
+</html>
